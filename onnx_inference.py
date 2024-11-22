@@ -76,11 +76,40 @@ input_name = session.get_inputs()[0].name
 
 # 运行模型推理
 result = session.run(None, {input_name: inputs})
+
+print(result)
+
+# 绘制检测结果
+# boxes = result[1][0]  # ndarray, shape=(num_obj, 4)，检测出的边框坐标，x1, y1, x2, y2
+# for box in boxes:
+#     print(box)
+#     x1, y1, x2, y2 = box
+#     color = (0, 255, 0)  # 绿色
+#     thickness = 2
+#     cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
+# cv2.imwrite('output_with_boxes.png', image)  # 保存图像
+
+# 绘制检测结果
 boxes = result[1][0]  # ndarray, shape=(num_obj, 4)，检测出的边框坐标，x1, y1, x2, y2
-for box in boxes:
-    print(box)
+confidences = result[2][0]  # 每个框的置信度
+class_ids = result[3][0]  # 每个框对应的类别ID
+
+for i, box in enumerate(boxes):
     x1, y1, x2, y2 = box
-    color = (0, 255, 0)  # 绿色
+    confidence = confidences[i]  # 当前框的置信度
+    class_id = class_ids[i]  # 当前框的类别ID
+
+    # 设置框的颜色（绿色）
+    color = (0, 255, 0)
     thickness = 2
+
+    # 绘制框
     cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
-cv2.imwrite('output_with_boxes.png', image)  # 保存图像
+
+    # 在框上方绘制类别ID和置信度
+    label = f"ID: {class_id}, Conf: {confidence:.2f}"
+    cv2.putText(image, label, (int(x1), int(y1)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+# 保存带框和标签的图像
+cv2.imwrite('output_with_boxes_and_labels.png', image)
+
